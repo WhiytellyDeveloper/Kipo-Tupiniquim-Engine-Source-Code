@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using KipoTupiniquimEngine.Extenssions;
 using MTM101BaldAPI;
 using MTM101BaldAPI.AssetTools;
 using MTM101BaldAPI.Registers;
@@ -7,52 +8,39 @@ using MTM101BaldAPI.SaveSystem;
 using System.Collections;
 using UnityEngine;
 
-namespace KipoTupiniquimEngine // Rename the namespace!
+namespace KipoTupiniquimEngine
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    [BepInDependency("mtm101.rulerp.bbplus.baldidevapi", MTM101BaldiDevAPI.VersionNumber)] // Replace with an older version if not using most of the API's newer functions and variables and stuff...
-    [BepInProcess("BALDI.exe")]
+    [BepInDependency("mtm101.rulerp.bbplus.baldidevapi", MTM101BaldiDevAPI.VersionNumber)]
     public class Plugin : BaseUnityPlugin
     {
-        public static Plugin Instance { get; private set; } // Remove it if necessary
-        public static AssetManager assetMan = new AssetManager();
+        public static Plugin _instance { get; private set; }
+        public static AssetManager assetManager = new();
 
         private void Awake()
         {
-            Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-            Instance = this;
+            Harmony harmony = new(PluginInfo.PLUGIN_GUID);
+            _instance = this;
             harmony.PatchAllConditionals();
-
-            LoadingEvents.RegisterOnLoadingScreenStart(Info, StartLoad());
-            LoadingEvents.RegisterOnAssetsLoaded(Info, PreLoad(), false); // IMPORTANT!!
-            LoadingEvents.RegisterOnAssetsLoaded(Info, PostLoad(), true);
-
-            ModdedSaveGame.AddSaveHandler(Info); // IMPORTANT!!
+            ModdedSaveGame.AddSaveHandler(Info);
+            LoadingEvents.RegisterOnAssetsLoaded(Info, PreLoading(), false);
         }
 
-        IEnumerator StartLoad() // Remove it if necessary
+        public IEnumerator PreLoading()
         {
             yield return 1;
-            yield return "Loading screen start message";
-        }
+            yield return "Loading Kipo Tupiniquim Sprites...";
+            assetManager.Add<Sprite>("Hand", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "HandSelection.png"));
 
-        IEnumerator PreLoad() // IMPORTANT!!
-        {
-            yield return 1;
-            yield return "Preload message";
-        }
-
-        IEnumerator PostLoad() // Remove it if necessary
-        {
-            yield return 1;
-            yield return "Postload message";
+            assetManager.Add<Sprite>("ExitBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "Exit.png"));
+            assetManager.Add<Sprite>("ExitransparentBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "ExitTransparent.png"));
         }
     }
 
     public static class PluginInfo
     {
-        public const string PLUGIN_GUID = "username.bbplus.modname"; // Example: verycoolmodder.bbplus.templatemod, all lowercase is recommended! Don't change it after publishing your mod!
-        public const string PLUGIN_NAME = "Mod Template"; // This needs to be changed to your mod's name, make sure that it's not the entire GUID!
-        public const string PLUGIN_VERSION = "0.0.0.0"; // It's likely gonna be 1.0.0.0 or 1.0.0, but very small mods will tend to use 1.0. REMEMBER TO UPDATE IT EVERY PATCH RELEASE!!
+        public const string PLUGIN_GUID = "whiytellydeveloper.plugin.mod.kipotupiniquimengine";
+        public const string PLUGIN_NAME = "Kipo Tupiniquim Engine";
+        public const string PLUGIN_VERSION = "1.0"; 
     }
 }
