@@ -1,8 +1,12 @@
 ﻿using HarmonyLib;
 using KipoTupiniquimEngine.Classes;
 using KipoTupiniquimEngine.Extenssions;
+using MTM101BaldAPI;
 using MTM101BaldAPI.Reflection;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace KipoTupiniquimEngine.Patches
@@ -48,4 +52,42 @@ namespace KipoTupiniquimEngine.Patches
             referenceSpriteRenderer.sprite = referenceSprite.ChangeColorToDominant(hexaColor, randomColor);
         }
     }
+
+    /*
+    [HarmonyPatch(typeof(ItemManager), "Awake")]
+    internal class AddQuartersManagerPatch
+    {
+        [HarmonyPostfix]
+        public static void Add(ItemManager __instance) =>
+            __instance.gameObject.GetOrAddComponent<KipoQuartersManager>().Initialize(__instance.gameObject.GetComponent<PlayerManager>().playerNumber);
+    }
+
+    [HarmonyPatch(typeof(Pickup), nameof(Pickup.Clicked))]
+    internal class QuarterPatch
+    {
+        public static void Prefix(Pickup __instance, int player)
+        {
+            if (__instance.item.itemType == Items.Quarter)
+                Singleton<CoreGameManager>.Instance.GetPlayer(player).gameObject.GetComponent<KipoQuartersManager>().AddQuarter(1);
+
+        }
+    }
+    */
+
+    [HarmonyPatch(typeof(PlayerMovement), nameof(PlayerMovement.StaminaUpdate))]
+    public static class PlayerMovement_StaminaUpdate_Patch
+    {
+        static void Postfix(ref PlayerMovement __instance)
+        {
+            float multiplier = StaminaMultiplierManager.Multiplier;
+            Singleton<CoreGameManager>.Instance.GetHud(__instance.pm.playerNumber).SetStaminaValue((__instance.stamina / multiplier) / (__instance.staminaMax * multiplier));
+        }
+    }
+
+    public static class StaminaMultiplierManager
+    {
+        public static float Multiplier { get; set; } = 1f;
+    }
+
+
 }

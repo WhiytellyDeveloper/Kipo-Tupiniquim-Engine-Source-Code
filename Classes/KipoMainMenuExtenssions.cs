@@ -1,8 +1,5 @@
 ﻿using MTM101BaldAPI.UI;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TMPro;
 using UnityEngine;
 
@@ -14,16 +11,44 @@ namespace KipoTupiniquimEngine.Classes
 
         public void Initialize()
         {
+            /*
             var text = UIHelpers.CreateText<TextMeshProUGUI>(BaldiFonts.ComicSans24, "TestButton", GameObject.Find("Menu").transform, new(-100, 0));
             text.raycastTarget = true;
             text.color = Color.black;
+
             var placeholderButton = text.gameObject.ConvertToButton<StandardMenuButton>(true);
             placeholderButton.underlineOnHigh = true;
             placeholderButton.InitializeAllEvents();
+            */
+
+            //-220 / 5, 160 / 5
+            var exit = UIHelpers.CreateImage(Plugin.assetManager.Get<Sprite>("ExitransparentBut"), GameObject.Find("Menu").transform, new(-6, 40), false, 0.6f);
+            exit.name = "exitButton";
+            exit.raycastTarget = true;
+
+            var exitButton = exit.gameObject.ConvertToButton<StandardMenuButton>(true);
+            exitButton.swapOnHigh = true;
+            exitButton.highlightedSprite = Plugin.assetManager.Get<Sprite>("ExitBut");
+            exitButton.unhighlightedSprite = Plugin.assetManager.Get<Sprite>("ExitransparentBut");
+            exitButton.InitializeAllEvents();
+
+            var achievements = UIHelpers.CreateImage(Plugin.assetManager.Get<Sprite>("AchievementsTransparentBut"), GameObject.Find("Menu").transform, new(6, -268), false);
+            achievements.name = "achievementsButton";
+
+            var achievementsButton = achievements.gameObject.ConvertToButton<StandardMenuButton>(true);
+            achievementsButton.swapOnHigh = true;
+            achievementsButton.highlightedSprite = Plugin.assetManager.Get<Sprite>("AchievementsBut");
+            achievementsButton.unhighlightedSprite = Plugin.assetManager.Get<Sprite>("AchievementsTransparentBut");
+            achievementsButton.audConfirmOverride = Resources.FindObjectsOfTypeAll<SoundObject>().First(x => x.name == "Activity_Incorrect");
+            achievementsButton.InitializeAllEvents();
 
             CreateExitChalkboard();
 
-            placeholderButton.OnPress.AddListener(delegate () {
+            achievementsButton.OnPress.AddListener(delegate () {
+                Singleton<InputManager>.Instance.Rumble(3f, 0.1f);
+            });
+
+            exitButton.OnPress.AddListener(delegate () {
                 SwitchExitChalkboard(true);
             });
         }
@@ -70,6 +95,7 @@ namespace KipoTupiniquimEngine.Classes
             });
 
             exitChalkboard.gameObject.SetActive(false);
+            GameObject.Find("Exit").SetActive(false);
         }
 
         public void SwitchExitChalkboard(bool value)

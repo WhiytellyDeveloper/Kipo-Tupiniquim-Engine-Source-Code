@@ -1,12 +1,12 @@
-﻿using MTM101BaldAPI.Reflection;
+﻿using KipoTupiniquimEngine.Extenssions;
+using KipoTupiniquimEngine.Patches;
+using MTM101BaldAPI.Reflection;
 using MTM101BaldAPI.UI;
-using PixelInternalAPI.Extensions;
 using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Video;
 
 namespace KipoTupiniquimEngine.Classes
 {
@@ -21,6 +21,7 @@ namespace KipoTupiniquimEngine.Classes
             CreateStaminaPorcentage();
             CreateLowStaminaText();
             //CreateUselessHand();
+            //CreateQuatersText();
 
             initialized = true;
         }
@@ -31,7 +32,11 @@ namespace KipoTupiniquimEngine.Classes
                 UpdateTimeText(Singleton<BaseGameManager>.Instance.realTime);
 
             if (staminaText != null && Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum) != null)
-                UpdateStaminaPorcentage(Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).plm.stamina);
+                UpdateStaminaPorcentage(Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).plm.stamina, Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).plm.staminaMax);
+
+            ColerfulInventory();
+            AdaptativeColorHud();
+            UpdateStaminaBackground();
         }
 
         public void CreateClock()
@@ -90,11 +95,11 @@ namespace KipoTupiniquimEngine.Classes
             this.lowStaminaText = lowStaminaText;
         }
 
-        public void UpdateStaminaPorcentage(float staminaPorcentage)
+        public void UpdateStaminaPorcentage(float staminaPorcentage, float staminaMax)
         {
-            staminaText.text = $"{(int)staminaPorcentage}%";
+            staminaText.text = $"{((int)Mathf.MoveTowards(staminaPorcentage, staminaPorcentage / staminaMax * 100, Time.deltaTime * 600))}%";
 
-            if (staminaPorcentage <= 5)
+            if (staminaPorcentage <= 0)
                 lowStaminaText.text = "YOU NEED REST!!!";
             else
                 lowStaminaText.text = "";
@@ -130,12 +135,147 @@ namespace KipoTupiniquimEngine.Classes
             Destroy(targetObject.gameObject);
         }
 
+        public void ColerfulInventory()
+        {
+            try
+            {
+                if (Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).itm != null)
+                {
+                    ItemManager itm = Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).itm;
+                    var itemBackgrounds = hud.ReflectionGetVariable("itemBackgrounds") as RawImage[];
+
+                    for (int i = 0; i < itm.maxItem + 1; i++)
+                    {
+                        if (i == itm.selectedItem)
+                        {
+                            Color color = itm.items[itm.selectedItem].itemSpriteSmall.GetMostGenericFromSprite();
+
+                            if (itm.items[itm.selectedItem].itemType == Items.None)
+                                color = Color.red;
+                            else
+                                color -= new Color(0.17f, 0.17f, 0.17f, 0f);
+
+                            itemBackgrounds[itm.selectedItem].color = color;
+                        }
+                        else
+                        {
+                            Color color = itm.items[i].itemSpriteSmall.GetMostGenericFromSprite();
+
+                            if (itm.items[i].itemType == Items.None)
+                                color = Color.white;
+                            else
+                                color += new Color(0.25f, 0.25f, 0.25f, 0f);
+
+                            itemBackgrounds[i].color = color;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        public void AdaptativeColorHud()
+        {
+            try
+            {
+                var pos = Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).ec.CellFromPosition(Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).transform.position).position;
+                var currentColor = Singleton<CoreGameManager>.Instance.lightMapTexture.GetPixel(pos.x, pos.z);
+                var transparentColor = new Color(0, 0, 0, 0);
+
+                if (Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).Invisible)
+                    transparentColor = new(0, 0, 0, 0.3f);
+
+
+                Image[] array = hud.ReflectionGetVariable("spritesToDarken") as Image[];
+
+                if (array == null) return;
+
+                for (int i = 0; i < array.Length; i++)
+                    array[i].color = Color.Lerp(array[i].color, currentColor - transparentColor, Time.deltaTime * 5f);
+
+            }
+            catch {
+            }
+        }
+
+
+
+        //CHANGE THIS LATER URGENTLY
+        public void UpdateStaminaBackground()
+        {
+            try
+            {
+                var player = Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum);
+                int stamina = (int)player.plm.stamina;
+                var staminatorBG = hud.transform.Find("Staminometer").Find("Background").GetComponent<Image>();
+
+                if (stamina > 0 && stamina < 100)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("1StaminometerBG"); // 0% - 100%
+                    StaminaMultiplierManager.Multiplier = 1;
+                }
+                else if (stamina > 100 && stamina < 200)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("2StaminometerBG"); // 200%
+                    StaminaMultiplierManager.Multiplier = 2;
+                }
+                else if (stamina > 200 && stamina < 300)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("3StaminometerBG"); // 300%
+                    StaminaMultiplierManager.Multiplier = 3;
+                }
+                else if (stamina > 300 && stamina < 400)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("4StaminometerBG"); // 400%
+                    StaminaMultiplierManager.Multiplier = 4;
+                }
+                else if (stamina > 400 && stamina < 500)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("5StaminometerBG"); // 500%
+                    StaminaMultiplierManager.Multiplier = 5;
+                }
+                else if (stamina > 500 && stamina < 600)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("6StaminometerBG"); // 600%
+                    StaminaMultiplierManager.Multiplier = 6;
+                }
+                else if (stamina > 600 && stamina < 700)
+                {
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("7StaminometerBG"); // 700%
+                    StaminaMultiplierManager.Multiplier = 7;
+                }
+                /*
+                else
+                    staminatorBG.sprite = Plugin.assetManager.Get<Sprite>("MaxStaminometerBG"); // 800% e acima
+                */
+
+            }
+
+            catch {
+            }
+        }
+
+        public void CreateQuatersText()
+        {
+            var quartersText = UIHelpers.CreateText<TextMeshProUGUI>(BaldiFonts.ComicSans18, "0/5", canvas.transform, new(299, -166, 1));
+            quartersText.name = "QuartersText";
+            quartersText.alignment = TextAlignmentOptions.Center;
+            quartersText.color = Color.black;
+            this.quartersText = quartersText;
+        }
+
+        public void UpdateQuartersText(int amount, int amountMax) =>
+            quartersText.text = $"{amount}/{amountMax}";
+
         public HudManager hud;
         public Canvas canvas;
         public bool initialized;
 
         private Image clockRenderer;
-        private TextMeshProUGUI timeText, staminaText, lowStaminaText;
+        private TextMeshProUGUI timeText, staminaText, lowStaminaText, quartersText;
         private int lastMinute;
     }
 }

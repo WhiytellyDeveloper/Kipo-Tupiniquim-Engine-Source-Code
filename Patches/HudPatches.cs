@@ -1,13 +1,6 @@
 ﻿using HarmonyLib;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Reflection.Emit;
-using MTM101BaldAPI.Reflection;
-using UnityEngine.UI;
-using TMPro;
 using KipoTupiniquimEngine.Classes;
 using MTM101BaldAPI;
-using KipoTupiniquimEngine.Extenssions;
 
 namespace KipoTupiniquimEngine.Patches
 {
@@ -16,36 +9,17 @@ namespace KipoTupiniquimEngine.Patches
         [HarmonyPatch(typeof(HudManager), nameof(HudManager.SetItemSelect))]
         internal class SetItemSelectPatch
         {
-            [HarmonyPrefix]
-            public static bool Block() { return false; }
-
             [HarmonyPostfix]
-            public static void Override(HudManager __instance, int value, string key)
-            {
-                if (Singleton<CoreGameManager>.Instance.GetPlayer(0) != null)
-                {
-                    var itemBackgrounds = __instance.ReflectionGetVariable("itemBackgrounds") as RawImage[];
-                    var previousSelectedItem = (int)__instance.ReflectionGetVariable("previousSelectedItem");
-                    var itemTitle = (TMP_Text)__instance.ReflectionGetVariable("itemTitle");
-                    var itm = Singleton<CoreGameManager>.Instance.GetPlayer(0).itm;
+            public static void Post(HudManager __instance) =>
+                __instance.gameObject.GetComponent<KipoHudExtenssion>().ColerfulInventory();
+        }
 
-                    if (itemBackgrounds[value] != null && itm != null)
-                    {
-                        itemBackgrounds[previousSelectedItem].color = Color.white;
-
-                        Color color = itm.items[itm.selectedItem].itemSpriteLarge.GetMostGenericFromSprite();
-
-                        if (itm.items[itm.selectedItem].itemType == Items.None)
-                            color = Color.red;
-                        else
-                            color -= new Color(0.15f, 0.15f, 0.15f, 0f);
-
-                        itemBackgrounds[value].color = color;
-                        __instance.ReflectionSetVariable("previousSelectedItem", value);
-                        if (itemTitle != null)
-                            itemTitle.text = Singleton<LocalizationManager>.Instance.GetLocalizedText(key);
-                    }
-                }
+        [HarmonyPatch(typeof(HudManager), "UpdateHudColor")]
+        internal class HudColorPatch
+        {
+            [HarmonyPrefix]
+            public static bool Override() {
+                return false;
             }
         }
 

@@ -6,6 +6,7 @@ using MTM101BaldAPI.AssetTools;
 using MTM101BaldAPI.Registers;
 using MTM101BaldAPI.SaveSystem;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 namespace KipoTupiniquimEngine
@@ -34,6 +35,17 @@ namespace KipoTupiniquimEngine
 
             assetManager.Add<Sprite>("ExitBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "Exit.png"));
             assetManager.Add<Sprite>("ExitransparentBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "ExitTransparent.png"));
+            assetManager.Add<Sprite>("AchievementsBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "Achiviments.png"));
+            assetManager.Add<Sprite>("AchievementsTransparentBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "AchivimentsTransparent.png"));
+
+            assetManager.Add<Sprite>("1StaminometerBG", Resources.FindObjectsOfTypeAll<Sprite>().First(x => x.name == "StaminometerSheet_BG"));
+            assetManager.Add<Sprite>("2StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/2StaminometerSheet_BG.png"));
+            assetManager.Add<Sprite>("3StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/3StaminometerSheet_BG.png"));
+            assetManager.Add<Sprite>("4StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/4StaminometerSheet_BG.png"));
+            assetManager.Add<Sprite>("5StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/5StaminometerSheet_BG.png"));
+            assetManager.Add<Sprite>("6StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/6StaminometerSheet_BG.png"));
+            assetManager.Add<Sprite>("7StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/7StaminometerSheet_BG.png"));
+            assetManager.Add<Sprite>("MaxStaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/MaxStaminometerSheet_BG.png"));
         }
     }
 
