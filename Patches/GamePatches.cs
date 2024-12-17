@@ -79,8 +79,17 @@ namespace KipoTupiniquimEngine.Patches
     {
         static void Postfix(ref PlayerMovement __instance)
         {
-            float multiplier = StaminaMultiplierManager.Multiplier;
-            Singleton<CoreGameManager>.Instance.GetHud(__instance.pm.playerNumber).SetStaminaValue((__instance.stamina / multiplier) / (__instance.staminaMax * multiplier));
+            if (__instance.stamina > 100)
+            {
+                float multiplier = StaminaMultiplierManager.Multiplier;
+                float minStamina = __instance.staminaMax * (multiplier - 1);
+                float maxStamina = __instance.staminaMax * multiplier;
+
+                float normalizedStamina = (__instance.stamina - minStamina) / (maxStamina - minStamina);
+                normalizedStamina = Mathf.Clamp(normalizedStamina, 0, 1);
+
+                Singleton<CoreGameManager>.Instance.GetHud(__instance.pm.playerNumber).SetStaminaValue(normalizedStamina);
+            }
         }
     }
 

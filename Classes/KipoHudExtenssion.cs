@@ -1,5 +1,6 @@
 ﻿using KipoTupiniquimEngine.Extenssions;
 using KipoTupiniquimEngine.Patches;
+using MTM101BaldAPI.AssetTools;
 using MTM101BaldAPI.Reflection;
 using MTM101BaldAPI.UI;
 using System.Collections;
@@ -41,7 +42,9 @@ namespace KipoTupiniquimEngine.Classes
 
         public void CreateClock()
         {
-            var clock = UIHelpers.CreateImage(Resources.FindObjectsOfTypeAll<Sprite>().First(x => x.name == "AlarmClockIcon_Large"), canvas.transform, new(-288, 114, 1), false);
+            clockAnimation = AssetLoader.SpritesFromSpritesheet(12, 1, 1, Vector2.zero, AssetLoader.TextureFromMod(Plugin._instance, "clockSpriteSheet.png"));
+
+            var clock = UIHelpers.CreateImage(clockAnimation[0], canvas.transform, new(-288, 114, 1), false);
             clock.name = "ClockIcon";
             clock.transform.localScale = new(0.8f, 0.8f, 1);
             clock.transform.SetSiblingIndex(7);
@@ -70,9 +73,24 @@ namespace KipoTupiniquimEngine.Classes
 
             if (lastMinute != ((int)Mathf.Floor(gameTime / 60f)))
             {
-                clockRenderer.color = Random.ColorHSV();
+                _SpinClock();
                 lastMinute = ((int)Mathf.Floor(gameTime / 60f));
             }
+        }
+
+        //Debug 
+        public void _SpinClock() =>
+            StartCoroutine(SpinClock());
+
+        private IEnumerator SpinClock()
+        {
+            Singleton<CoreGameManager>.Instance.audMan.PlaySingle(Plugin.assetManager.Get<SoundObject>("ClockSpin"));
+            foreach(Sprite clockSprite in clockAnimation)
+            {
+                clockRenderer.sprite = clockSprite;
+                yield return new WaitForSeconds(0.1f);
+            }
+            clockRenderer.sprite = clockAnimation[0];
         }
 
         public void CreateStaminaPorcentage()
@@ -199,9 +217,7 @@ namespace KipoTupiniquimEngine.Classes
             }
             catch {
             }
-        }
-
-
+        }    
 
         //CHANGE THIS LATER URGENTLY
         public void UpdateStaminaBackground()
@@ -275,6 +291,7 @@ namespace KipoTupiniquimEngine.Classes
         public bool initialized;
 
         private Image clockRenderer;
+        public Sprite[] clockAnimation, elevatorAnimation;
         private TextMeshProUGUI timeText, staminaText, lowStaminaText, quartersText;
         private int lastMinute;
     }

@@ -30,7 +30,7 @@ namespace KipoTupiniquimEngine
         public IEnumerator PreLoading()
         {
             yield return 1;
-            yield return "Loading Kipo Tupiniquim Sprites...";
+            yield return "Loading Kipo Tupiniquim Assets...";
             assetManager.Add<Sprite>("Hand", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "HandSelection.png"));
 
             assetManager.Add<Sprite>("ExitBut", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "Exit.png"));
@@ -46,6 +46,9 @@ namespace KipoTupiniquimEngine
             assetManager.Add<Sprite>("6StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/6StaminometerSheet_BG.png"));
             assetManager.Add<Sprite>("7StaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/7StaminometerSheet_BG.png"));
             assetManager.Add<Sprite>("MaxStaminometerBG", AssetLoader.SpriteFromMod(this, Vector2.zero, 1, "StaminometerBGs/MaxStaminometerSheet_BG.png"));
+
+            assetManager.Add<SoundObject>("ClockSpin", ObjectCreators.CreateSoundObject(AssetLoader.AudioClipFromMod(this, "ClockSpin.wav"), "", SoundType.Effect, Color.white));
+            assetManager.Get<SoundObject>("ClockSpin").subtitle = false; //WHY???
         }
     }
 
