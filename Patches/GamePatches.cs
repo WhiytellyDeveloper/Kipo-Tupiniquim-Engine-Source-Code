@@ -1,12 +1,8 @@
 ﻿using HarmonyLib;
 using KipoTupiniquimEngine.Classes;
 using KipoTupiniquimEngine.Extenssions;
-using MTM101BaldAPI;
 using MTM101BaldAPI.Reflection;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection.Emit;
 using UnityEngine;
 
 namespace KipoTupiniquimEngine.Patches
@@ -82,8 +78,8 @@ namespace KipoTupiniquimEngine.Patches
             if (__instance.stamina > 100)
             {
                 float multiplier = StaminaMultiplierManager.Multiplier;
-                float minStamina = __instance.staminaMax * (multiplier - 1);
-                float maxStamina = __instance.staminaMax * multiplier;
+                float minStamina = 100 * (multiplier - 1);
+                float maxStamina = 100 * multiplier;
 
                 float normalizedStamina = (__instance.stamina - minStamina) / (maxStamina - minStamina);
                 normalizedStamina = Mathf.Clamp(normalizedStamina, 0, 1);

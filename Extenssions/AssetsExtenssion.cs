@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PixelInternalAPI.Extensions;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -107,6 +108,67 @@ namespace KipoTupiniquimEngine.Extenssions
             int midY = texture.height / 2;
 
             return texture.GetPixel(midX, midY);
+        }
+
+        public static void OverlayTexture(this Texture2D baseTex, Texture2D overlayTex)
+        {
+            for (int x = 0; x < overlayTex.width; x++)
+            {
+                for (int y = 0; y < overlayTex.height; y++)
+                {
+                    Color overlayPixel = overlayTex.GetPixel(x, y);
+                    if (overlayPixel.a > 0)
+                        baseTex.SetPixel(x, y, overlayPixel);
+                }
+            }
+
+            baseTex.Apply();
+        }
+
+        public static Sprite OverlaySprite(this Sprite baseTex, Texture2D overlayTex, bool overlayTransparent = false)
+        {
+            var texture = baseTex.texture.MakeReadableTexture();
+
+            Rect baseRect = baseTex.rect;
+            int baseXOffset = (int)baseRect.x;
+            int baseYOffset = (int)baseRect.y;
+
+            for (int x = 0; x < overlayTex.width; x++)
+            {
+                for (int y = 0; y < overlayTex.height; y++)
+                {
+                    Color overlayPixel = overlayTex.GetPixel(x, y);
+
+                    int mappedX = baseXOffset + x;
+                    int mappedY = baseYOffset + y;
+
+                    if (mappedX >= 0 && mappedX < texture.width && mappedY >= 0 && mappedY < texture.height)
+                    {
+                        Color basePixel = texture.GetPixel(mappedX, mappedY);
+
+                        if (overlayTransparent && basePixel.a == 0)
+                            texture.SetPixel(mappedX, mappedY, overlayPixel);
+                        else if (!overlayTransparent && overlayPixel.a > 0)
+                            texture.SetPixel(mappedX, mappedY, overlayPixel);        
+                    }
+                }
+            }
+
+            texture.Apply();
+
+            return Sprite.Create(
+                texture,
+                baseTex.rect,
+                baseTex.pivot,
+                baseTex.pixelsPerUnit,
+                0,
+                SpriteMeshType.FullRect
+            );
+        }
+
+        public static Sprite ConvertTexToSpriteWithBase(this Texture2D texture, Sprite baseSp)
+        {
+            return Sprite.Create(texture, baseSp.rect, baseSp.pivot);
         }
     }
 }

@@ -30,5 +30,35 @@ namespace KipoTupiniquimEngine.Extenssions
 
             return reverseList;
         }
+
+        public static T ToWeighted<T, A>(this object obj, int weighted) where T : WeightedSelection<A>, new() where A : class
+        {
+            var castedObject = obj as A;
+
+            if (castedObject == null)
+                throw new InvalidCastException($"Unable to convert object to type {typeof(A).Name}.");
+
+            T weightedSelection = new T
+            {
+                selection = castedObject,
+                weight = weighted
+            };
+
+            return weightedSelection;
+        }
+
+        public static List<WeightedSelection<T>> Convert<T>(this List<T> list, int defaultWeight) where T : class
+        {
+            List<WeightedSelection<T>> weightedList = new List<WeightedSelection<T>>();
+            foreach (T item in list)
+            {
+                weightedList.Add(new WeightedSelection<T>
+                {
+                    selection = item,
+                    weight = defaultWeight
+                });
+            }
+            return weightedList;
+        }
     }
 }
