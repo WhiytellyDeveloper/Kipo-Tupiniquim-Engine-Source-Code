@@ -170,5 +170,24 @@ namespace KipoTupiniquimEngine.Extenssions
         {
             return Sprite.Create(texture, baseSp.rect, baseSp.pivot);
         }
+
+        public static Texture2D ResizeTexture(this Texture2D original, int newWidth, int newHeight)
+        {
+            Texture2D resized = new(newWidth, newHeight, original.format, false);
+
+            for (int y = 0; y < newHeight; y++)
+            {
+                for (int x = 0; x < newWidth; x++)
+                {
+                    float u = (float)x / newWidth;
+                    float v = (float)y / newHeight;
+                    Color color = original.GetPixelBilinear(u, v);
+                    resized.SetPixel(x, y, color);
+                }
+            }
+
+            resized.Apply();
+            return resized;
+        }
     }
 }

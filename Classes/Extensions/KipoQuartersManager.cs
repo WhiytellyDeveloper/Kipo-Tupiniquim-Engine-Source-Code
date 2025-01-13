@@ -1,7 +1,7 @@
 ﻿using MTM101BaldAPI.Registers;
 using UnityEngine;
 
-namespace KipoTupiniquimEngine.Classes
+namespace KipoTupiniquimEngine.Classes.Extensions
 {
     public class KipoQuartersManager : MonoBehaviour
     {

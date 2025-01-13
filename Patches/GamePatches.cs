@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
-using KipoTupiniquimEngine.Classes;
+using KipoTupiniquimEngine.Classes.Extensions;
 using KipoTupiniquimEngine.Extenssions;
+using MTM101BaldAPI;
 using MTM101BaldAPI.Reflection;
 using System.Linq;
 using UnityEngine;
@@ -14,25 +15,31 @@ namespace KipoTupiniquimEngine.Patches
         {
             var sprite = __instance.ReflectionGetVariable("sprite") as SpriteRenderer;
             var animator = Singleton<CoreGameManager>.Instance.GetHud(player).ReflectionGetVariable("notebookAnimator") as Animator;
-            Singleton<CoreGameManager>.Instance.GetHud(player).GetComponent<KipoHudExtenssion>().CollectPickup(sprite.sprite, animator.transform.localPosition / 1.3f);
+            Singleton<CoreGameManager>.Instance.GetHud(player).GetComponent<KipoHudExtenssion>().CollectPickup(sprite.sprite, animator.transform.localPosition / 1.3f, Vector3.zero);
         }
     }
 
-    [HarmonyPatch(typeof(ItemSlotsManager), nameof(ItemSlotsManager.CollectItem))]
+    [HarmonyPatch]
     internal class PickupAnimPatch
     {
-        public static void Prefix(ItemSlotsManager __instance, ItemObject item, int slot)
+        [HarmonyPatch(typeof(ItemSlotsManager), nameof(ItemSlotsManager.CollectItem)), HarmonyPrefix]
+        public static void CollectItemPrefix(ItemSlotsManager __instance, ItemObject item, int slot)
         {
             var hud = __instance.ReflectionGetVariable("hud") as HudManager;
             var icons = __instance.ReflectionGetVariable("itemSlider") as ItemSlider[];
-
-            //300 - 5
-            //260 - 4
+            var maxItems = Singleton<CoreGameManager>.Instance.GetPlayer(hud.hudNum).itm.maxItem + 1;
+            var list = GenericExtenssions.GenerateHighList(0, 1, maxItems);
+            list.Reverse();
 
             if (item.addToInventory)
-                Singleton<CoreGameManager>.Instance.GetHud(hud.hudNum).GetComponent<KipoHudExtenssion>().CollectPickup(item.itemSpriteLarge, new(GenericExtenssions.GenerateLowList(140, -40, icons.Length)[slot], 155, 1), 0.5f);
+            {
+                var slotTransform = GameObject.Find($"ItemSlot ({list[slot]})").transform;
+                var position = new Vector3(-slotTransform.localPosition.x - 40, 155, 1);
+                hud.GetComponent<KipoHudExtenssion>().CollectPickup(item.itemSpriteLarge, position, Vector3.zero, 0.5f);
+            }
         }
     }
+
 
     [HarmonyPatch(typeof(Notebook), "Start")]
     internal class NotebookMultipleColorPatch
@@ -94,5 +101,57 @@ namespace KipoTupiniquimEngine.Patches
         public static float Multiplier { get; set; } = 1f;
     }
 
+    [HarmonyPatch(typeof(Pickup))]
+    public class PickupPatch
+    {
+        public static Pickup lastPíckupClicked;
+        [HarmonyPrefix]
+        [HarmonyPatch(nameof(Pickup.Clicked))]
+        public static void Clicked_Prefix(Pickup __instance) =>
+            lastPíckupClicked = __instance;
 
+    }
+
+    //I just copied this from the pixelGuy in the animation mod, out of pure laziness in programming it :/
+    [HarmonyPatch(typeof(ItemManager), "RemoveItem")]
+    public class LastRemovedItemPatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(ItemManager __instance, int val) =>
+            lastRemovedItem = __instance.items[val];
+
+        public static ItemObject lastRemovedItem;
+    }
+
+    [HarmonyPatch(typeof(ItemManager), "Update")]
+    public class ItemManagerPatch
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(ItemManager __instance)
+        {
+            return !(bool)__instance.ReflectionGetVariable("disabled");
+        }
+    }
+
+    [HarmonyPatch(typeof(RoomFunctionContainer), nameof(RoomFunctionContainer.AddFunction))]
+    public class FunctionAddPatch
+    {
+        [HarmonyPrefix]
+        public static void Postfix(RoomFunctionContainer __instance, RoomFunction function)
+        {
+            if (Singleton<CoreGameManager>.Instance != null)
+                function.Initialize((RoomController)__instance.ReflectionGetVariable("room"));
+        }
+    }
+
+    [HarmonyPatch(typeof(Pickup), nameof(Pickup.Start))]
+    public class PickupRemoverPatch
+    {
+        [HarmonyPrefix]
+        public static void Postfix(Pickup __instance)
+        {
+            var pickup =__instance.gameObject.GetOrAddComponent<PickupExtensions>();
+            pickup.Initialize(__instance, __instance.item);
+        }
+    }
 }

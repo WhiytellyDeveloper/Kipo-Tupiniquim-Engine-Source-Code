@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using KipoTupiniquimEngine.Classes;
+using KipoTupiniquimEngine.Classes.Extensions;
 using MTM101BaldAPI;
 
 namespace KipoTupiniquimEngine.Patches

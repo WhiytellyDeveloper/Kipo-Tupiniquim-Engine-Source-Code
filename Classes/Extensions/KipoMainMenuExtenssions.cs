@@ -1,9 +1,10 @@
-﻿using MTM101BaldAPI.UI;
+﻿using KipoTupiniquimEngine.Extenssions;
+using MTM101BaldAPI.UI;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 
-namespace KipoTupiniquimEngine.Classes
+namespace KipoTupiniquimEngine.Classes.Extensions
 {
     public class KipoMainMenuExtenssions : MonoBehaviour
     {
@@ -22,7 +23,7 @@ namespace KipoTupiniquimEngine.Classes
             */
 
             //-220 / 5, 160 / 5
-            var exit = UIHelpers.CreateImage(Plugin.assetManager.Get<Sprite>("ExitransparentBut"), GameObject.Find("Menu").transform, new(-6, 40), false, 0.6f);
+            var exit = UIHelpers.CreateImage(Plugin.assetManager.Get<Sprite>("ExitransparentBut"), GameObject.Find("Menu").transform, new(-25, 178 - 120), false, 0.6f);
             exit.name = "exitButton";
             exit.raycastTarget = true;
 
@@ -30,9 +31,11 @@ namespace KipoTupiniquimEngine.Classes
             exitButton.swapOnHigh = true;
             exitButton.highlightedSprite = Plugin.assetManager.Get<Sprite>("ExitBut");
             exitButton.unhighlightedSprite = Plugin.assetManager.Get<Sprite>("ExitransparentBut");
+            exitButton.image.rectTransform.SetAnchorAndPosition(TextAnchor.UpperLeft);
             exitButton.InitializeAllEvents();
 
-            var achievements = UIHelpers.CreateImage(Plugin.assetManager.Get<Sprite>("AchievementsTransparentBut"), GameObject.Find("Menu").transform, new(6, -268), false);
+            /*
+            var achievements = UIHelpers.CreateImage(Plugin.assetManager.Get<Sprite>("AchievementsTransparentBut"), GameObject.Find("Menu").transform, new(-25, -268), false);
             achievements.name = "achievementsButton";
 
             var achievementsButton = achievements.gameObject.ConvertToButton<StandardMenuButton>(true);
@@ -40,24 +43,30 @@ namespace KipoTupiniquimEngine.Classes
             achievementsButton.highlightedSprite = Plugin.assetManager.Get<Sprite>("AchievementsBut");
             achievementsButton.unhighlightedSprite = Plugin.assetManager.Get<Sprite>("AchievementsTransparentBut");
             achievementsButton.audConfirmOverride = Resources.FindObjectsOfTypeAll<SoundObject>().First(x => x.name == "Activity_Incorrect");
+            achievementsButton.image.rectTransform.SetAnchorPreset(HUDExtenssion.AnchorPresets.BottomLeft);
+            achievementsButton.transform.localPosition = new(8, -28);
             achievementsButton.InitializeAllEvents();
-
-            CreateExitChalkboard();
 
             achievementsButton.OnPress.AddListener(delegate () {
                 Singleton<InputManager>.Instance.Rumble(3f, 0.1f);
             });
+                        */
 
-            exitButton.OnPress.AddListener(delegate () {
+            CreateExitChalkboard();
+
+            exitButton.OnPress.AddListener(delegate ()
+            {
                 SwitchExitChalkboard(true);
             });
         }
 
         private void CreateExitChalkboard()
         {
-            var chalkboard = UIHelpers.CreateImage(Resources.FindObjectsOfTypeAll<Sprite>().First(x => x.name == "ChalkBoardStandard"), GameObject.Find("Menu").transform, new(215, -125, 0), false, 1.2f);
+            var chalkboard = UIHelpers.CreateImage(Resources.FindObjectsOfTypeAll<Sprite>().First(x => x.name == "ChalkBoardStandard"), GameObject.Find("Menu").transform, new(0, -5, 0), false, 1.2f);
             chalkboard.name = "Chalkboard";
             exitChalkboard = chalkboard.transform;
+            chalkboard.rectTransform.SetAnchorAndPosition(TextAnchor.MiddleCenter);
+            chalkboard.transform.localPosition = new(0, -5);
 
             var text1 = UIHelpers.CreateText<TextMeshProUGUI>(BaldiFonts.ComicSans18, "Are you leaving already?<color=red>\nYou'll miss out on the rest of the fun!</color>", chalkboard.transform, Vector3.up * -110, false);
             text1.rectTransform.sizeDelta = new(500, 500);
@@ -73,7 +82,8 @@ namespace KipoTupiniquimEngine.Classes
             exitButton.underlineOnHigh = true;
             exitButton.InitializeAllEvents();
 
-            exitButton.OnPress.AddListener(delegate () {
+            exitButton.OnPress.AddListener(delegate ()
+            {
                 CursorController.Instance.SetColor(new(0, 0, 0, 0));
                 CursorController.Instance.DisableClick(true);
                 GameObject.Find("Menu").GetComponent<MainMenu>().Quit();
@@ -90,7 +100,8 @@ namespace KipoTupiniquimEngine.Classes
             cancelButton.underlineOnHigh = true;
             cancelButton.InitializeAllEvents();
 
-            cancelButton.OnPress.AddListener(delegate () {  
+            cancelButton.OnPress.AddListener(delegate ()
+            {
                 SwitchExitChalkboard(false);
             });
 
@@ -102,9 +113,7 @@ namespace KipoTupiniquimEngine.Classes
         {
             Singleton<GlobalCam>.Instance.Transition(UiTransition.Dither, 0.00000334561f);
             exitChalkboard.gameObject.SetActive(value);
-
-            if (GameObject.Find("New Game Object") != null)
-                GameObject.Find("New Game Object").SetActive(!value);
+            exitChalkboard.transform.SetSiblingIndex(16);
         }
     }
 }
